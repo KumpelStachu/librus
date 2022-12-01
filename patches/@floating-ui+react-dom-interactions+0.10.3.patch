@@ -1,0 +1,29 @@
+diff --git a/node_modules/@floating-ui/react-dom-interactions/dist/floating-ui.react-dom-interactions.umd.js b/node_modules/@floating-ui/react-dom-interactions/dist/floating-ui.react-dom-interactions.umd.js
+index 24a40fb..0f1e827 100644
+--- a/node_modules/@floating-ui/react-dom-interactions/dist/floating-ui.react-dom-interactions.umd.js
++++ b/node_modules/@floating-ui/react-dom-interactions/dist/floating-ui.react-dom-interactions.umd.js
+@@ -172,8 +172,6 @@
+     return value ? value instanceof getWindow(value).HTMLElement : false;
+   }
+ 
+-  // `toString()` prevents bundlers from trying to `import { useInsertionEffect } from 'react'`
+-  const useInsertionEffect = React__namespace[/*#__PURE__*/'useInsertionEffect'.toString()];
+   function useEvent(callback) {
+     const ref = React__namespace.useRef(() => {
+       if (process.env.NODE_ENV !== "production") {
+@@ -181,14 +179,7 @@
+       }
+     });
+ 
+-    if (useInsertionEffect) {
+-      // eslint-disable-next-line react-hooks/rules-of-hooks
+-      useInsertionEffect(() => {
+-        ref.current = callback;
+-      });
+-    } else {
+-      ref.current = callback;
+-    }
++    ref.current = callback;
+ 
+     return React__namespace.useCallback(function () {
+       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
