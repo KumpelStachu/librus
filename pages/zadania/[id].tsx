@@ -1,5 +1,5 @@
-import { Button, Container, Flex, Grid, Paper, Stack, Text, Title } from '@mantine/core'
-import { IconAlertCircle, IconChevronLeft } from '@tabler/icons'
+import { Button, Container, Flex, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { IconAlertCircle, IconChecks, IconChevronLeft, IconCircleCheck } from '@tabler/icons'
 import AutoLinker from 'autolinker'
 import DataError from 'components/DataError'
 import DataLoader from 'components/DataLoader'
@@ -14,48 +14,72 @@ const AssignmentPage: NextPage = () => {
 	const router = useRouter()
 	const id = router.query.id as string
 
-	const assignment = trpc.librus.assignment.useQuery(id)
+	const utils = trpc.useContext()
+	const { data: assignment, isLoading, error } = trpc.librus.assignment.useQuery(id)
+	const markAsDone = trpc.librus.assignmentMarkAsDone.useMutation({
+		onSuccess() {
+			utils.librus.assignment.invalidate()
+			utils.librus.assignmentsCount.invalidate()
+		},
+	})
 
-	if (assignment.isLoading) return <DataLoader label="Pobieranie zadania domowego" />
-	if (assignment.error) return <DataError code={assignment.error.data?.code} />
+	if (isLoading) return <DataLoader label="Pobieranie zadania domowego" />
+	if (error) return <DataError code={error.data?.code} />
 
 	return (
 		<>
-			<HeadTitle title={[assignment.data.Topic, 'Zadania domowe']} />
-			<Button
-				mb="xl"
-				variant="light"
-				component={Link}
-				href="/zadania"
-				leftIcon={<IconChevronLeft />}
-			>
-				Wróć do listy zadań domowych
-			</Button>
+			<HeadTitle title={[assignment.Topic, 'Zadania domowe']} />
 
-			<Container size="md">
+			<Group>
+				<Button variant="light" component={Link} href="/zadania" leftIcon={<IconChevronLeft />}>
+					Wróć do listy zadań domowych
+				</Button>
+				<Button
+					variant="light"
+					leftIcon={<IconChecks />}
+					hidden={assignment.MarkedAsDone}
+					onClick={() => markAsDone.mutate(assignment.Id)}
+					loading={markAsDone.isLoading}
+				>
+					Oznacz jako wykonane
+				</Button>
+			</Group>
+
+			<Container size="md" mt="xl">
 				<Stack spacing="lg">
-					<Title>{assignment.data.Topic}</Title>
+					<Title>{assignment.Topic}</Title>
 
 					<Grid gutter="xl">
 						<Grid.Col span={12} sm="content">
 							<Flex direction={{ sm: 'column' }} columnGap="lg" rowGap="sm">
 								<Text>
 									<Text weight="bold">Nauczyciel</Text>
-									{assignment.data.Teacher.FirstName} {assignment.data.Teacher.LastName}
+									{assignment.Teacher.FirstName} {assignment.Teacher.LastName}
 								</Text>
 
 								<Text>
 									<Text weight="bold">Data dodania</Text>
-									{assignment.data.Date}
+									{assignment.Date}
 								</Text>
 
 								<Text>
 									<Text weight="bold">Do oddania</Text>
 									<Text
-										c={dayjs().isAfter(assignment.data.DueDate, 'day') ? 'red.6' : ''}
+										c={
+											assignment.MarkedAsDone
+												? 'green.6'
+												: dayjs().isAfter(assignment.DueDate, 'day')
+												? 'red.6'
+												: ''
+										}
 										sx={{ svg: { marginBottom: -4 } }}
 									>
-										{assignment.data.DueDate} <IconAlertCircle size={21} />
+										{assignment.DueDate}&nbsp;
+										{assignment.MarkedAsDone ? (
+											<IconCircleCheck size={21} />
+										) : (
+											dayjs().isAfter(assignment.DueDate, 'day') && <IconAlertCircle size={21} />
+										)}
 									</Text>
 								</Text>
 							</Flex>
@@ -70,9 +94,9 @@ const AssignmentPage: NextPage = () => {
 									<Text
 										sx={{ whiteSpace: 'pre-wrap', a: { wordBreak: 'break-all' } }}
 										dangerouslySetInnerHTML={{
-											__html: AutoLinker.link(assignment.data.Text, {
+											__html: AutoLinker.link(assignment.Text.trim(), {
 												newWindow: true,
-												truncate: { location: 'middle' },
+												truncate: { location: 'smart' },
 												sanitizeHtml: true,
 											}),
 										}}

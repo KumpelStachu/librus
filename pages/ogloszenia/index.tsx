@@ -18,10 +18,10 @@ import Link from 'next/link'
 import { trpc } from 'utils/trpc'
 
 const NoticesPage: NextPage = () => {
-	const notices = trpc.librus.notices.useQuery()
+	const { data: notices, isLoading, error } = trpc.librus.notices.useQuery()
 
-	if (notices.isLoading) return <DataLoader label="Pobieranie ogłoszeń" />
-	if (notices.error) return <DataError code={notices.error.data?.code} />
+	if (isLoading) return <DataLoader label="Pobieranie ogłoszeń" />
+	if (error) return <DataError code={error.data?.code} />
 
 	return (
 		<>
@@ -48,7 +48,7 @@ const NoticesPage: NextPage = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{notices.data?.map(notice => (
+							{notices.map(notice => (
 								<tr key={notice.Id}>
 									<td>
 										<Text weight={notice.WasRead ? 'normal' : 'bold'}>{notice.StartDate}</Text>

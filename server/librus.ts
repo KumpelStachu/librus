@@ -25,10 +25,15 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 		'access_token' in credentials ? credentials : await getToken(credentials)
 	if (!token) throw new Error('token is required')
 
-	async function api<K extends string, T>(endpoint: string, method: 'GET' | 'POST' = 'GET') {
+	async function api<K extends string, T>(
+		endpoint: string,
+		body?: BodyInit,
+		headers?: HeadersInit
+	) {
 		const res = await fetch(`${BASE_URL}/2.0${endpoint}`, {
-			headers: { Authorization: `Bearer ${token.access_token}` },
-			method,
+			headers: { ...headers, Authorization: `Bearer ${token.access_token}` },
+			method: body ? 'POST' : 'GET',
+			body,
 		})
 
 		if (!res.ok) {

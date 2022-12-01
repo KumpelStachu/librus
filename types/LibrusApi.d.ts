@@ -34,22 +34,35 @@ declare namespace Librus {
 		ExpiredPremiumDate: number
 	}
 
-	type User = {
+	type User<Employee extends boolean = false> = {
 		Id: number
 		AccountId: string
-		FirstName: string
+		FirstName: Employee extends true ? string | null : string
 		LastName: string
-		Class: Librus.API.Reference<Class> & {
-			UUID: string
-		}
-		Unit: Librus.API.Reference<Unit>
-		ClassRegisterNumber: number
-		IsEmployee: boolean
 		GroupId: number
-	}
+	} & (Employee extends true
+		? { IsEmployee: true }
+		: {
+				IsEmployee: false
+				IsPedagogue?: true
+				IsSchoolAdministrator?: true
+				ClassRegisterNumber: number
+				Unit: Librus.API.Reference<Unit>
+				Class: Librus.API.Reference<Class> & {
+					UUID: string
+				}
+		  })
 
 	type Class = {
 		Id: number
+		Number: number
+		Symbol: string
+		BeginSchoolYear: string
+		EndFirstSemester: string
+		EndSchoolYear: string
+		Unit: Librus.API.Reference<Unit>
+		ClassTutor: Librus.API.Reference<User>
+		ClassTutors: Librus.API.Reference<User>[]
 	}
 
 	type VirtualClass = {
@@ -102,6 +115,71 @@ declare namespace Librus {
 		AddedBy: Librus.API.Reference<User>
 		CreationDate: string
 		WasRead: boolean
+	}
+
+	type Unit = {
+		Id: number
+		Name: string
+		ShortName: string
+		Type: string
+		BehaviourType: `${number}`
+		GradesSettings: {
+			StandardGradesEnabled: boolean
+			PointGradesEnabled: boolean
+			DescriptiveGradesEnabled: boolean
+			ForcePointGradesDictionaries: boolean
+			AllowOverrangePointGrades: boolean
+			AllowClassTutorEditGrades: boolean
+			CanAddAnyGrades: boolean
+		}
+		LessonSettings: {
+			AllowZeroLessonNumber: boolean
+			MaxLessonNumber: number
+			IsExtramuralCourse: boolean
+			IsAdultsDaily: boolean
+			AllowAddOtherLessons: boolean
+			AllowAddSubstitutions: boolean
+		}
+		LessonsRange: LessonsRange
+		BehaviourGradesSettings: {
+			StartPoints: {
+				Semester1: number
+				Semester2: number
+			}
+			ShowCategoriesShortcuts: boolean
+		}
+	}
+
+	type LessonsRange = {
+		From: string
+		To: string
+		RawFrom: null
+		RawTo: null
+	}[]
+
+	type School = {
+		Id: number
+		Name: string
+		Town: string
+		Street: string
+		State: string
+		BuildingNumber: string
+		ApartmentNumber: string
+		LessonsRange: LessonsRange
+		SchoolYear: number
+		VocationalSchool: number
+		NameHeadTeacher: string
+		SurnameHeadTeacher: string
+		Project: number
+		PostCode: string
+		Service: {
+			IsSynergy: boolean
+			Url: string
+			Variant: {
+				Name: string
+				DisplayName: string
+			}
+		}
 	}
 
 	namespace API {

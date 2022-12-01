@@ -5,10 +5,10 @@ import type { NextPage } from 'next'
 import { trpc } from 'utils/trpc'
 
 const FilesPage: NextPage = () => {
-	const files = trpc.librus.files.useQuery()
+	const { data: files, isLoading, error } = trpc.librus.files.useQuery()
 
-	if (files.isLoading) return <DataLoader label="Pobieranie plików" />
-	if (files.error) return <DataError code={files.error.data?.code} />
+	if (isLoading) return <DataLoader label="Pobieranie plików" />
+	if (error) return <DataError code={error.message} />
 
 	return (
 		<Stack spacing="xl">
@@ -23,7 +23,7 @@ const FilesPage: NextPage = () => {
 					</tr>
 				</thead>
 				<tbody>
-					{files.data?.map(file => (
+					{files.map(file => (
 						<tr key={file.id}>
 							<td>{file.addedOnDate}</td>
 							<td>{file.displayName}</td>

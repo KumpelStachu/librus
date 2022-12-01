@@ -5,5 +5,8 @@
 	},
 	"plugins": ["@typescript-eslint"],
 	"extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
-	"ignorePatterns": ["next.config.js"]
+	"ignorePatterns": ["next.config.js"],
+	"rules": {
+		"@typescript-eslint/no-non-null-assertion": "off"
+	}
 }

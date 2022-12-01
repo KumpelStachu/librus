@@ -14,7 +14,7 @@ const NoticePage: NextPage = () => {
 	const id = router.query.id as string
 
 	const utils = trpc.useContext()
-	const notice = trpc.librus.notice.useQuery(id)
+	const { data: notice, isLoading, error } = trpc.librus.notice.useQuery(id)
 	const markAsRead = trpc.librus.noticeMarkAsRead.useMutation({
 		onSuccess() {
 			utils.librus.notice.invalidate()
@@ -22,12 +22,13 @@ const NoticePage: NextPage = () => {
 		},
 	})
 
-	if (notice.isLoading) return <DataLoader label="Pobieranie ogłoszenia" />
-	if (notice.error) return <DataError code={notice.error.data?.code} />
+	if (isLoading) return <DataLoader label="Pobieranie ogłoszenia" />
+	if (error) return <DataError code={error.data?.code} />
 
 	return (
 		<>
-			<HeadTitle title={[notice.data.Subject, 'Ogłoszenia']} />
+			<HeadTitle title={[notice.Subject, 'Ogłoszenia']} />
+
 			<Group>
 				<Button variant="light" component={Link} href="/ogloszenia" leftIcon={<IconChevronLeft />}>
 					Wróć do listy ogłoszeń
@@ -35,7 +36,7 @@ const NoticePage: NextPage = () => {
 				<Button
 					variant="light"
 					leftIcon={<IconEyeCheck />}
-					hidden={notice.data.WasRead}
+					hidden={notice.WasRead}
 					onClick={() => markAsRead.mutate(id)}
 					loading={markAsRead.isLoading}
 				>
@@ -45,7 +46,7 @@ const NoticePage: NextPage = () => {
 
 			<Container size="md" mt="xl">
 				<Stack spacing="lg">
-					<Title>{notice.data.Subject}</Title>
+					<Title>{notice.Subject}</Title>
 
 					<Grid gutter="xl">
 						<Grid.Col span={12} sm="content">
@@ -61,17 +62,17 @@ const NoticePage: NextPage = () => {
 							>
 								<Text>
 									<Text weight="bold">Autor</Text>
-									{notice.data.AddedBy.FirstName} {notice.data.AddedBy.LastName}
+									{notice.AddedBy.FirstName} {notice.AddedBy.LastName}
 								</Text>
 
 								<Text sx={{ flexShrink: 0 }}>
 									<Text weight="bold">Data publikacji</Text>
-									{notice.data.StartDate}
+									{notice.StartDate}
 								</Text>
 
 								<Text sx={{ flexShrink: 0 }}>
 									<Text weight="bold">Data wygaśnięcia</Text>
-									{notice.data.EndDate}
+									{notice.EndDate}
 								</Text>
 							</Flex>
 						</Grid.Col>
@@ -85,7 +86,7 @@ const NoticePage: NextPage = () => {
 									<Text
 										sx={{ whiteSpace: 'pre-wrap', a: { wordBreak: 'break-all' } }}
 										dangerouslySetInnerHTML={{
-											__html: AutoLinker.link(notice.data.Content, {
+											__html: AutoLinker.link(notice.Content.trim(), {
 												newWindow: true,
 												truncate: { location: 'smart' },
 												sanitizeHtml: true,
