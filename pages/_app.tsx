@@ -1,11 +1,12 @@
+import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core'
+import { useDidUpdate, useHotkeys, useLocalStorage } from '@mantine/hooks'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Analytics } from '@vercel/analytics/react'
 import Layout from 'components/Layout'
 import RouterTransition from 'components/RouterTransition'
-import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core'
-import { trpc } from 'utils/trpc'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { useDidUpdate, useHotkeys, useLocalStorage } from '@mantine/hooks'
+import { trpc } from 'utils/trpc'
 
 function App({ Component, pageProps }: AppProps) {
 	const updateTheme = trpc.cookie.setTheme.useMutation()
@@ -39,7 +40,23 @@ function App({ Component, pageProps }: AppProps) {
 				<MantineProvider
 					withGlobalStyles
 					withNormalizeCSS
-					theme={{ colorScheme, defaultRadius: 'md', primaryColor: 'grape' }}
+					theme={{
+						colorScheme,
+						defaultRadius: 'md',
+						primaryColor: 'grape',
+						components: {
+							Container: {
+								defaultProps: {
+									p: 0,
+								},
+							},
+							Paper: {
+								defaultProps: {
+									radius: 'lg',
+								},
+							},
+						},
+					}}
 				>
 					<Layout>
 						<RouterTransition />
@@ -48,9 +65,12 @@ function App({ Component, pageProps }: AppProps) {
 				</MantineProvider>
 			</ColorSchemeProvider>
 
+			<Analytics />
 			<ReactQueryDevtools />
 		</>
 	)
 }
+
+export { reportWebVitals } from 'next-axiom'
 
 export default trpc.withTRPC(App)

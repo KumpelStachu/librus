@@ -1,8 +1,10 @@
-import { Button, Container, Grid, Paper, Stack, Text, Title } from '@mantine/core'
-import { IconChevronLeft } from '@tabler/icons'
+import { Button, Container, Flex, Grid, Paper, Stack, Text, Title } from '@mantine/core'
+import { IconAlertCircle, IconChevronLeft } from '@tabler/icons'
+import AutoLinker from 'autolinker'
 import DataError from 'components/DataError'
 import DataLoader from 'components/DataLoader'
 import HeadTitle from 'components/HeadTitle'
+import dayjs from 'dayjs'
 import type { NextPage } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -30,19 +32,13 @@ const AssignmentPage: NextPage = () => {
 				Wróć do listy zadań domowych
 			</Button>
 
-			<Container p={0} size="md">
+			<Container size="md">
 				<Stack spacing="lg">
 					<Title>{assignment.data.Topic}</Title>
 
 					<Grid gutter="xl">
 						<Grid.Col span={12} sm="content">
-							<Stack
-								sx={t => ({
-									[t.fn.smallerThan('sm')]: {
-										flexDirection: 'row',
-									},
-								})}
-							>
+							<Flex direction={{ sm: 'column' }} columnGap="lg" rowGap="sm">
 								<Text>
 									<Text weight="bold">Nauczyciel</Text>
 									{assignment.data.Teacher.FirstName} {assignment.data.Teacher.LastName}
@@ -55,20 +51,32 @@ const AssignmentPage: NextPage = () => {
 
 								<Text>
 									<Text weight="bold">Do oddania</Text>
-									{assignment.data.DueDate}
+									<Text
+										c={dayjs().isAfter(assignment.data.DueDate, 'day') ? 'red.6' : ''}
+										sx={{ svg: { marginBottom: -4 } }}
+									>
+										{assignment.data.DueDate} <IconAlertCircle size={21} />
+									</Text>
 								</Text>
-							</Stack>
+							</Flex>
 						</Grid.Col>
 
 						<Grid.Col span="auto">
-							<Paper p="lg" sx={{ minHeight: '100%' }}>
+							<Paper p="lg" sx={{ minHeight: '100%' }} withBorder>
 								<Stack spacing="md">
 									<Title inline order={3}>
 										Opis
 									</Title>
-									<Text inline component="pre">
-										{assignment.data.Text}
-									</Text>
+									<Text
+										sx={{ whiteSpace: 'pre-wrap', a: { wordBreak: 'break-all' } }}
+										dangerouslySetInnerHTML={{
+											__html: AutoLinker.link(assignment.data.Text, {
+												newWindow: true,
+												truncate: { location: 'middle' },
+												sanitizeHtml: true,
+											}),
+										}}
+									/>
 								</Stack>
 							</Paper>
 						</Grid.Col>

@@ -1,6 +1,8 @@
 import { Button, Container, MediaQuery, Stack, Table, Text, Title } from '@mantine/core'
+import { IconAlertCircle } from '@tabler/icons'
 import DataError from 'components/DataError'
 import DataLoader from 'components/DataLoader'
+import dayjs from 'dayjs'
 import type { NextPage } from 'next'
 import Link from 'next/link'
 import { trpc } from 'utils/trpc'
@@ -12,9 +14,10 @@ const HomeworkPage: NextPage = () => {
 	if (homework.error) return <DataError code={homework.error.data?.code} />
 
 	return (
-		<Container p={0} size="md">
+		<Container size="md">
 			<Stack spacing="xl">
 				<Title>Zadania domowe</Title>
+
 				<Table
 					highlightOnHover
 					sx={{
@@ -40,7 +43,14 @@ const HomeworkPage: NextPage = () => {
 								<MediaQuery smallerThan="xs" styles={{ display: 'none' }}>
 									<td>{assignment.Date}</td>
 								</MediaQuery>
-								<td>{assignment.DueDate}</td>
+								<td>
+									<Text
+										c={dayjs().isAfter(assignment.DueDate, 'day') ? 'red.6' : ''}
+										sx={{ svg: { marginBottom: -4 } }}
+									>
+										{assignment.DueDate} <IconAlertCircle size={19} />
+									</Text>
+								</td>
 								<td>
 									<Text lineClamp={1}>{assignment.Topic}</Text>
 								</td>

@@ -13,7 +13,9 @@ async function getToken(credentials: Librus.OAuth.Credentials) {
 		},
 	})
 
-	if (!res.ok) throw new Error('auth failed')
+	if (!res.ok) {
+		throw new Error('auth failed')
+	}
 
 	return res.json()
 }
@@ -24,16 +26,15 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 	if (!token) throw new Error('token is required')
 
 	async function api<K extends string, T>(endpoint: string) {
-		const res: Librus.API.Response<K, T> | null = await fetch(`${BASE_URL}/2.0${endpoint}`, {
+		const res = await fetch(`${BASE_URL}/2.0${endpoint}`, {
 			headers: { Authorization: `Bearer ${token.access_token}` },
-		}).then(r => r.ok && r.json())
+		})
 
-		// console.log(endpoint, res)
+		if (!res.ok) {
+			throw new Error(await res.text())
+		}
 
-		// @ts-expect-error error if not ok
-		if (!res) throw new Error(res.Message)
-
-		return res
+		return res.json() as Promise<Librus.API.Response<K, T>>
 	}
 
 	return {
