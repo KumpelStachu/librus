@@ -35,13 +35,11 @@ export const authOptions: NextAuthOptions = {
 	],
 	callbacks: {
 		async session({ session, token }) {
-			// console.log('[SESSION]', { session, token })
 			session.user = token.user as User
-			// session.token = token.librus_token as Librus.OAuth.Token
 			return session
 		},
 		async jwt({ token, user }) {
-			// console.log('[JWT]', { token, user })
+			// TODO: handle refreshing librus_token
 			if (user) {
 				const { librus_token, ..._user } = user
 				token.librus_token = librus_token

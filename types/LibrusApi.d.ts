@@ -93,6 +93,17 @@ declare namespace Librus {
 		HomeworkAssigmentFiles: unknown[]
 	}
 
+	type Notice = {
+		Id: string
+		StartDate: string
+		EndDate: string
+		Subject: string
+		Content: string
+		AddedBy: Librus.API.Reference<User>
+		CreationDate: string
+		WasRead: boolean
+	}
+
 	namespace API {
 		type Response<K extends string, T> = {
 			Resources: Record<'string', { Url: string }>

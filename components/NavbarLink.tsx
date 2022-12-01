@@ -7,15 +7,17 @@ type Props = {
 	exact?: boolean
 	icon?: TablerIcon
 	href: string
+	loading?: boolean
 	children: string
 }
 
-export default function NavbarLink({ exact, icon: Icon, href, children }: Props) {
+export default function NavbarLink({ exact, icon: Icon, href, loading, children }: Props) {
 	const { pathname } = useRouter()
 
 	return (
 		<Button
 			variant={(exact ? pathname === href : pathname.startsWith(href)) ? 'light' : 'subtle'}
+			loading={loading}
 			component={Link}
 			href={href}
 			fullWidth

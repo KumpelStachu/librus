@@ -1,4 +1,4 @@
-import { Navbar, ScrollArea, Stack } from '@mantine/core'
+import { Indicator, Navbar, ScrollArea, Stack } from '@mantine/core'
 import {
 	IconBallpen,
 	IconBell,
@@ -11,6 +11,7 @@ import {
 	IconNumbers,
 	IconSchool,
 } from '@tabler/icons'
+import { trpc } from 'utils/trpc'
 import NavbarLink from './NavbarLink'
 
 type Props = {
@@ -18,6 +19,9 @@ type Props = {
 }
 
 export default function AppNavbar({ opened }: Props) {
+	const notices = trpc.librus.noticesCount.useQuery()
+	const assignments = trpc.librus.assignmentsCount.useQuery()
+
 	return (
 		<Navbar width={{ sm: 260 }} hiddenBreakpoint="sm" hidden={!opened}>
 			<ScrollArea>
@@ -31,18 +35,42 @@ export default function AppNavbar({ opened }: Props) {
 					<NavbarLink href="/wiadomosci" icon={IconMail}>
 						Wiadomości
 					</NavbarLink>
-					<NavbarLink href="/ogloszenia" icon={IconNews}>
-						Ogłoszenia
-					</NavbarLink>
+					<Indicator
+						label={notices.data}
+						inline
+						size={24}
+						offset={16}
+						zIndex={10}
+						withBorder
+						position="middle-end"
+						disabled={notices.isLoading || notices.isError || notices.data === 0}
+						styles={{ indicator: { pointerEvents: 'none' } }}
+					>
+						<NavbarLink href="/ogloszenia" icon={IconNews} loading={notices.isLoading}>
+							Ogłoszenia
+						</NavbarLink>
+					</Indicator>
 					<NavbarLink href="/plan" icon={IconBellSchool}>
 						Plan lekcji
 					</NavbarLink>
 					<NavbarLink href="/terminarz" icon={IconCalendarEvent}>
 						Terminarz
 					</NavbarLink>
-					<NavbarLink href="/zadania" icon={IconBallpen}>
-						Zadania domowe
-					</NavbarLink>
+					<Indicator
+						label={assignments.data}
+						inline
+						size={24}
+						offset={16}
+						zIndex={10}
+						withBorder
+						position="middle-end"
+						disabled={assignments.isLoading || assignments.isError || assignments.data === 0}
+						styles={{ indicator: { pointerEvents: 'none' } }}
+					>
+						<NavbarLink href="/zadania" icon={IconBallpen} loading={assignments.isLoading}>
+							Zadania domowe
+						</NavbarLink>
+					</Indicator>
 					<NavbarLink href="/frekwencja" icon={IconCalendarMinus}>
 						Frekwencja
 					</NavbarLink>

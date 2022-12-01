@@ -64,7 +64,7 @@ const AssignmentPage: NextPage = () => {
 						<Grid.Col span="auto">
 							<Paper p="lg" sx={{ minHeight: '100%' }} withBorder>
 								<Stack spacing="md">
-									<Title inline order={3}>
+									<Title inline order={2}>
 										Opis
 									</Title>
 									<Text

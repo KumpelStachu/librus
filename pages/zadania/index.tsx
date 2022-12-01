@@ -7,11 +7,11 @@ import type { NextPage } from 'next'
 import Link from 'next/link'
 import { trpc } from 'utils/trpc'
 
-const HomeworkPage: NextPage = () => {
-	const homework = trpc.librus.homework.useQuery()
+const AssignmentsPage: NextPage = () => {
+	const assignments = trpc.librus.assignments.useQuery()
 
-	if (homework.isLoading) return <DataLoader label="Pobieranie zadań domowych" />
-	if (homework.error) return <DataError code={homework.error.data?.code} />
+	if (assignments.isLoading) return <DataLoader label="Pobieranie zadań domowych" />
+	if (assignments.error) return <DataError code={assignments.error.data?.code} />
 
 	return (
 		<Container size="md">
@@ -21,7 +21,7 @@ const HomeworkPage: NextPage = () => {
 				<Table
 					highlightOnHover
 					sx={{
-						'& :is(th,td):not(:nth-child(3))': {
+						'& :is(th,td):not(:nth-of-type(3))': {
 							width: '1%',
 							whiteSpace: 'nowrap',
 						},
@@ -34,11 +34,11 @@ const HomeworkPage: NextPage = () => {
 							</MediaQuery>
 							<th>Data oddania</th>
 							<th>Nazwa</th>
-							<th>Akcje</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
-						{homework.data?.map(assignment => (
+						{assignments.data?.map(assignment => (
 							<tr key={assignment.Id}>
 								<MediaQuery smallerThan="xs" styles={{ display: 'none' }}>
 									<td>{assignment.Date}</td>
@@ -68,4 +68,4 @@ const HomeworkPage: NextPage = () => {
 	)
 }
 
-export default HomeworkPage
+export default AssignmentsPage
