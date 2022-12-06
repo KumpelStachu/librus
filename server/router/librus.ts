@@ -3,96 +3,67 @@ import { z } from 'zod'
 
 export const librusRouter = router({
 	me: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.librus.api<'Me', Librus.Me>('/Me').then(r => r.Me)
+		return ctx.librus.me()
 	}),
 	notifications: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.librus
-			.api<'data', Librus.Notification[]>(`/NotificationCenterDeferrals/${ctx.session.user.Id}`)
-			.then(r => r.data)
+		return ctx.librus.notifications(ctx.session.user.Id)
 	}),
 	files: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.librus.api<'Data', Librus.SchoolFile[]>('/SchoolFiles').then(r => r.Data)
+		return ctx.librus.files()
 	}),
 	assignments: protectedProcedure.query(async ({ ctx }) => {
-		const { HomeWorkAssignments } = await ctx.librus.api<'HomeWorkAssignments', Librus.Homework[]>(
-			'/HomeWorkAssignments'
-		)
+		const assignments = await ctx.librus.assignments()
 
-		return HomeWorkAssignments.map(a => ({
+		return assignments.map(a => ({
 			...a,
 			MarkedAsDone: a.StudentsWhoMarkedAsDone.includes(ctx.session.user.UserId),
 		}))
 	}),
 	assignmentsCount: protectedProcedure.query(async ({ ctx }) => {
-		const { HomeWorkAssignments } = await ctx.librus.api<'HomeWorkAssignments', Librus.Homework[]>(
-			'/HomeWorkAssignments'
-		)
+		const assignments = await ctx.librus.assignments()
 
-		return HomeWorkAssignments.filter(
-			a => !a.StudentsWhoMarkedAsDone.includes(ctx.session.user.UserId)
-		).length
+		return assignments.filter(a => !a.StudentsWhoMarkedAsDone.includes(ctx.session.user.UserId))
+			.length
 	}),
 	assignment: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const { HomeWorkAssignment } = await ctx.librus.api<'HomeWorkAssignment', Librus.Homework>(
-			`/HomeWorkAssignments/${input}`
-		)
-
-		const { User } = await ctx.librus.api<'User', Librus.User<true>>(
-			`/Users/${HomeWorkAssignment.Teacher.Id}`
-		)
+		const assignment = await ctx.librus.assignment(input)
+		const teacher = await ctx.librus.user(assignment.Teacher.Id)
 
 		return {
-			...HomeWorkAssignment,
-			Teacher: User,
-			MarkedAsDone: HomeWorkAssignment.StudentsWhoMarkedAsDone.includes(ctx.session.user.UserId),
+			...assignment,
+			Teacher: teacher,
+			MarkedAsDone: assignment.StudentsWhoMarkedAsDone.includes(ctx.session.user.UserId),
 		}
 	}),
 	assignmentMarkAsDone: protectedProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
-		return ctx.librus
-			.api<'Status', string>('/HomeWorkAssignments/MarkAsDone', `{"homework":${input}}`, {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			})
-			.then(r => r.Status)
+		return ctx.librus.assignmentMarkAsDone(input)
 	}),
 	notices: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.librus
-			.api<'SchoolNotices', Librus.Notice[]>('/SchoolNotices')
-			.then(r => r.SchoolNotices)
+		return ctx.librus.notices()
 	}),
 	noticesCount: protectedProcedure.query(async ({ ctx }) => {
-		const { SchoolNotices } = await ctx.librus.api<'SchoolNotices', Librus.Notice[]>(
-			'/SchoolNotices'
-		)
+		const notices = await ctx.librus.notices()
 
-		return SchoolNotices.filter(n => !n.WasRead).length
+		return notices.filter(n => !n.WasRead).length
 	}),
 	notice: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const { SchoolNotice } = await ctx.librus.api<'SchoolNotice', Librus.Notice>(
-			`/SchoolNotices/${input}`
-		)
-
-		const { User } = await ctx.librus.api<'User', Librus.User<true>>(
-			`/Users/${SchoolNotice.AddedBy.Id}`
-		)
+		const notice = await ctx.librus.notice(input)
+		const teacher = await ctx.librus.user(notice.AddedBy.Id)
 
 		return {
-			...SchoolNotice,
-			AddedBy: User,
+			...notice,
+			AddedBy: teacher,
 		}
 	}),
 	noticeMarkAsRead: protectedProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
-		return ctx.librus.api(`/SchoolNotices/MarkAsRead/${input}`, '')
+		return ctx.librus.noticeMarkAsRead(input)
 	}),
 	fullInfo: protectedProcedure.query(async ({ ctx }) => {
-		const { User: Me } = await ctx.librus.api<'User', Librus.User>(
-			`/Users/${ctx.session.user.UserId}`
-		)
-		const { Class } = await ctx.librus.api<'Class', Librus.Class>(`/Classes/${Me.Class.Id}`)
-		const { User: ClassTutor } = await ctx.librus.api<'User', Librus.User<true>>(
-			`/Users/${Class.ClassTutor.Id}`
-		)
-		const { Unit } = await ctx.librus.api<'Unit', Librus.Unit>(`/Units/${Class.Unit.Id}`)
-		const { School } = await ctx.librus.api<'School', Librus.School>('/Schools')
+		const Me = await ctx.librus.user<false>(ctx.session.user.UserId)
+		const Class = await ctx.librus.class(Me.Class.Id)
+		const ClassTutor = await ctx.librus.user(Class.ClassTutor.Id)
+		const Unit = await ctx.librus.unit(Class.Unit.Id)
+		const School = await ctx.librus.school()
 
 		return {
 			Me,

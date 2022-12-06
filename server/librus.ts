@@ -32,7 +32,7 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 	) {
 		const res = await fetch(`${BASE_URL}/2.0${endpoint}`, {
 			headers: { ...headers, Authorization: `Bearer ${token.access_token}` },
-			method: body ? 'POST' : 'GET',
+			method: body !== undefined ? 'POST' : 'GET',
 			body,
 		})
 
@@ -46,5 +46,37 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 	return {
 		token,
 		api,
+
+		me: () => api<'Me', Librus.Me>('/Me').then(r => r.Me),
+		user: <Teacher extends boolean = true>(Id: number) =>
+			api<'User', Librus.User<Teacher>>(`/Users/${Id}`).then(r => r.User),
+		class: (UserId: number) => api<'Class', Librus.Class>(`/Classes/${UserId}`).then(r => r.Class),
+		unit: (Id: number) => api<'Unit', Librus.Unit>(`/Units/${Id}`).then(r => r.Unit),
+		school: () => api<'School', Librus.School>('/Schools').then(r => r.School),
+
+		notifications: (UserId: number) =>
+			api<'data', Librus.Notification[]>(`/NotificationCenterDeferrals/${UserId}`).then(
+				r => r.data
+			),
+		files: () => api<'Data', Librus.SchoolFile[]>('/SchoolFiles').then(r => r.Data),
+
+		assignments: () =>
+			api<'HomeWorkAssignments', Librus.Homework[]>('/HomeWorkAssignments').then(
+				r => r.HomeWorkAssignments
+			),
+		assignment: (Id: string) =>
+			api<'HomeWorkAssignment', Librus.Homework>(`/HomeWorkAssignments/${Id}`).then(
+				r => r.HomeWorkAssignment
+			),
+		assignmentMarkAsDone: (Id: number) =>
+			api<'Status', string>('/HomeWorkAssignments/MarkAsDone', `{"homework":${Id}}`, {
+				'Content-Type': 'application/x-www-form-urlencoded',
+			}).then(r => r.Status),
+
+		notices: () =>
+			api<'SchoolNotices', Librus.Notice[]>('/SchoolNotices').then(r => r.SchoolNotices),
+		notice: (Id: string) =>
+			api<'SchoolNotice', Librus.Notice>(`/SchoolNotices/${Id}`).then(r => r.SchoolNotice),
+		noticeMarkAsRead: (Id: string) => api(`/SchoolNotices/MarkAsRead/${Id}`, ''),
 	}
 }
