@@ -17,8 +17,8 @@ const NoticePage: NextPage = () => {
 	const { data: notice, isLoading, error } = trpc.librus.notice.useQuery(id)
 	const markAsRead = trpc.librus.noticeMarkAsRead.useMutation({
 		onSuccess() {
-			utils.librus.notice.invalidate()
-			utils.librus.noticesCount.invalidate()
+			utils.librus.notice.invalidate(id)
+			utils.librus.notices.invalidate()
 		},
 	})
 

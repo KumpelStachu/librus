@@ -43,22 +43,27 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 		return res.json() as Promise<Librus.API.Response<K, T>>
 	}
 
+	const str = <T>(a: T[]) => (a.length === 1 ? [...a, ...a] : a).join(',')
+
 	return {
 		token,
 		api,
 
-		me: () => api<'Me', Librus.Me>('/Me').then(r => r.Me),
-		user: <Teacher extends boolean = true>(Id: number) =>
-			api<'User', Librus.User<Teacher>>(`/Users/${Id}`).then(r => r.User),
-		class: (UserId: number) => api<'Class', Librus.Class>(`/Classes/${UserId}`).then(r => r.Class),
-		unit: (Id: number) => api<'Unit', Librus.Unit>(`/Units/${Id}`).then(r => r.Unit),
-		school: () => api<'School', Librus.School>('/Schools').then(r => r.School),
-
+		files: () => api<'Data', Librus.SchoolFile[]>('/SchoolFiles').then(r => r.Data),
 		notifications: (UserId: number) =>
 			api<'data', Librus.Notification[]>(`/NotificationCenterDeferrals/${UserId}`).then(
 				r => r.data
 			),
-		files: () => api<'Data', Librus.SchoolFile[]>('/SchoolFiles').then(r => r.Data),
+
+		me: () => api<'Me', Librus.Me>('/Me').then(r => r.Me),
+		class: (UserId: number) => api<'Class', Librus.Class>(`/Classes/${UserId}`).then(r => r.Class),
+		unit: (Id: number) => api<'Unit', Librus.Unit>(`/Units/${Id}`).then(r => r.Unit),
+		school: () => api<'School', Librus.School>('/Schools').then(r => r.School),
+
+		users: (Ids: number[] = []) =>
+			api<'Users', Librus.User<true>[]>(`/Users/${str(Ids)}`).then(r => r.Users),
+		user: <Teacher extends boolean = true>(Id: number) =>
+			api<'User', Librus.User<Teacher>>(`/Users/${Id}`).then(r => r.User),
 
 		assignments: () =>
 			api<'HomeWorkAssignments', Librus.Homework[]>('/HomeWorkAssignments').then(
@@ -78,5 +83,32 @@ export default async function Librus(credentials: Librus.OAuth.Token | Librus.OA
 		notice: (Id: string) =>
 			api<'SchoolNotice', Librus.Notice>(`/SchoolNotices/${Id}`).then(r => r.SchoolNotice),
 		noticeMarkAsRead: (Id: string) => api(`/SchoolNotices/MarkAsRead/${Id}`, ''),
+
+		colors: (Ids: number[] = []) =>
+			api<'Colors', Librus.Color[]>(`/Colors/${str(Ids)}`).then(r => r.Colors),
+		color: (Id: string) => api<'Color', Librus.Color>(`/Colors/${Id}`).then(r => r.Color),
+
+		lessons: (Ids: number[] = []) =>
+			api<'Lessons', Librus.Lesson[]>(`/Lessons/${str(Ids)}`).then(r => r.Lessons),
+		lesson: (Id: number) => api<'Lesson', Librus.Lesson>(`/Lessons/${Id}`).then(r => r.Lesson),
+
+		subjects: (Ids: number[] = []) =>
+			api<'Subjects', Librus.Subject[]>(`/Subjects/${str(Ids)}`).then(r => r.Subjects),
+		subject: (Id: number) => api<'Subject', Librus.Subject>(`/Subjects/${Id}`).then(r => r.Subject),
+
+		grades: () => api<'Grades', Librus.Grade[]>('/Grades').then(r => r.Grades),
+		grade: (Id: number) => api<'Grade', Librus.Grade>(`/Grades/${Id}`).then(r => r.Grade),
+
+		gradeCategories: (Ids: number[] = []) =>
+			api<'Categories', Librus.GradeCategory[]>(`/Grades/Categories/${str(Ids)}`).then(
+				r => r.Categories
+			),
+		gradeCategory: (Id: number) =>
+			api<'Category', Librus.GradeCategory>(`/Grades/Categories/${Id}`).then(r => r.Category),
+
+		gradeComments: (Ids: number[] = []) =>
+			api<'Comments', Librus.GradeComment[]>(`/Grades/Comments/${str(Ids)}`).then(r => r.Comments),
+		gradeComment: (Id: number) =>
+			api<'Comment', Librus.GradeComment>(`/Grades/Comments/${Id}`).then(r => r.Comment),
 	}
 }

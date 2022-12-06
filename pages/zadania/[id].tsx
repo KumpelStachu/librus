@@ -18,8 +18,8 @@ const AssignmentPage: NextPage = () => {
 	const { data: assignment, isLoading, error } = trpc.librus.assignment.useQuery(id)
 	const markAsDone = trpc.librus.assignmentMarkAsDone.useMutation({
 		onSuccess() {
-			utils.librus.assignment.invalidate()
-			utils.librus.assignmentsCount.invalidate()
+			utils.librus.assignment.invalidate(id)
+			utils.librus.assignments.invalidate()
 		},
 	})
 

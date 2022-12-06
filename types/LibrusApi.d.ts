@@ -182,6 +182,69 @@ declare namespace Librus {
 		}
 	}
 
+	type Color = {
+		Id: number
+		RGB: string
+		Name: string
+	}
+
+	type Lesson = {
+		Id: number
+		Teacher: Librus.API.Reference<User<true>>
+		Subject: Librus.API.Reference<Subject>
+		Class: Librus.API.Reference<Class>
+	}
+
+	type Subject = {
+		Id: number
+		Name: string
+		No: number
+		Short: string
+		IsExtracurricular: boolean
+		IsBlockLesson: boolean
+	}
+
+	type GradeCategory = {
+		Id: number
+		Teacher: Librus.API.Reference<User<true>>
+		Color: Librus.API.Reference<Color>
+		Name: string
+		AdultsExtramural: boolean
+		AdultsDaily: boolean
+		Standard: boolean
+		IsReadOnly: '0' | '1'
+		Short: string
+		ForLessons: Librus.API.Reference<Lesson>[]
+		BlockAnyGrades: boolean
+		ObligationToPerform: boolean
+	}
+
+	type GradeComment = {
+		Id: number
+		AddedBy: Librus.API.Reference<User<true>>
+		Grade: Librus.API.Reference<Grade>
+		Text: string
+	}
+
+	type Grade = {
+		Id: number
+		Lesson: Librus.API.Reference<Lesson>
+		Subject: Librus.API.Reference<Subject>
+		Student: Librus.API.Reference<User>
+		Category: Librus.API.Reference<GradeCategory>
+		AddedBy: Librus.API.Reference<User<true>>
+		Grade: string
+		Date: string
+		AddDate: string
+		Semester: 1 | 2
+		IsConstituent: boolean
+		IsSemester: boolean
+		IsSemesterProposition: boolean
+		IsFinal: boolean
+		IsFinalProposition: boolean
+		Comments?: Librus.API.Reference<GradeComment>[]
+	}
+
 	namespace API {
 		type Response<K extends string, T> = {
 			Resources: Record<'string', { Url: string }>

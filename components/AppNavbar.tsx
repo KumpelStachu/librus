@@ -11,6 +11,7 @@ import {
 	IconNumbers,
 	IconSchool,
 } from '@tabler/icons'
+import useSession from 'hooks/useSession'
 import { trpc } from 'utils/trpc'
 import NavbarLink from './NavbarLink'
 
@@ -19,8 +20,14 @@ type Props = {
 }
 
 export default function AppNavbar({ opened }: Props) {
-	const notices = trpc.librus.noticesCount.useQuery()
-	const assignments = trpc.librus.assignmentsCount.useQuery()
+	const { session } = useSession()
+	const notices = trpc.librus.notices.useQuery()
+	const assignments = trpc.librus.assignments.useQuery()
+
+	const noticesCount = notices.data?.filter(n => !n.WasRead).length
+	const assignmentsCount =
+		session &&
+		assignments.data?.filter(a => !a.StudentsWhoMarkedAsDone.includes(session?.user.UserId)).length
 
 	return (
 		<Navbar width={{ sm: 260 }} hiddenBreakpoint="sm" hidden={!opened}>
@@ -36,14 +43,14 @@ export default function AppNavbar({ opened }: Props) {
 						Wiadomości
 					</NavbarLink>
 					<Indicator
-						label={notices.data}
+						label={noticesCount}
 						inline
 						size={24}
 						offset={16}
 						zIndex={10}
 						withBorder
 						position="middle-end"
-						disabled={notices.isLoading || notices.isError || notices.data === 0}
+						disabled={notices.isLoading || notices.isError || noticesCount === 0}
 						styles={{ indicator: { pointerEvents: 'none' } }}
 					>
 						<NavbarLink href="/ogloszenia" icon={IconNews} loading={notices.isLoading}>
@@ -57,14 +64,14 @@ export default function AppNavbar({ opened }: Props) {
 						Terminarz
 					</NavbarLink>
 					<Indicator
-						label={assignments.data}
+						label={assignmentsCount}
 						inline
 						size={24}
 						offset={16}
 						zIndex={10}
 						withBorder
 						position="middle-end"
-						disabled={assignments.isLoading || assignments.isError || assignments.data === 0}
+						disabled={assignments.isLoading || assignments.isError || assignmentsCount === 0}
 						styles={{ indicator: { pointerEvents: 'none' } }}
 					>
 						<NavbarLink href="/zadania" icon={IconBallpen} loading={assignments.isLoading}>
