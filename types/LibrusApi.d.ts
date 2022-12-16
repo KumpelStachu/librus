@@ -11,6 +11,7 @@ declare namespace Librus {
 			expires_in: number
 			account_group: number
 			refresh_token: string
+			issued_at: number
 		}
 	}
 
@@ -244,6 +245,40 @@ declare namespace Librus {
 		IsFinalProposition: boolean
 		Comments?: Librus.API.Reference<GradeComment>[]
 	}
+
+	type Attendance = {
+		Id: number
+		Lesson: Librus.API.Reference<Lesson>
+		Student: Librus.API.Reference<User>
+		Date: string
+		AddDate: string
+		LessonNo: number
+		Semester: number
+		Type: Librus.API.Reference<AttendanceType>
+		AddedBy: Librus.API.Reference<User>
+	}
+
+	type AttendanceType = {
+		Id: number
+		Name: string
+		Short: string
+		IsPresenceKind: boolean
+		Order: number
+		Identifier: string
+	} & (
+		| {
+				Standard: true
+				ColorRGB: string
+				StandardType: undefined
+				Color: undefined
+		  }
+		| {
+				Standard: false
+				ColorRGB: undefined
+				StandardType: Librus.API.Reference<AttendanceType>
+				Color: Librus.API.Reference<Color>
+		  }
+	)
 
 	namespace API {
 		type Response<K extends string, T> = {

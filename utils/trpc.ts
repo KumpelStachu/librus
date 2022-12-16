@@ -12,13 +12,13 @@ const getBaseUrl = () => {
 export const trpc = createTRPCNext<AppRouter>({
 	config({ ctx }) {
 		return {
-			queryClientConfig: {
-				defaultOptions: {
-					queries: {
-						refetchOnWindowFocus: false,
-					},
-				},
-			},
+			// queryClientConfig: {
+			// 	defaultOptions: {
+			// 		queries: {
+			// 			refetchOnWindowFocus: false,
+			// 		},
+			// 	},
+			// },
 			transformer: superjson,
 			links: [
 				httpBatchLink({

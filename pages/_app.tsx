@@ -1,9 +1,14 @@
 import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core'
 import { useDidUpdate, useHotkeys, useLocalStorage } from '@mantine/hooks'
+import { ModalsProvider } from '@mantine/modals'
+import { NotificationsProvider } from '@mantine/notifications'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Analytics } from '@vercel/analytics/react'
+import HeadTitle from 'components/HeadTitle'
 import Layout from 'components/Layout'
+import AttendancesCalendar from 'components/modals/AttendancesCalendar'
 import RouterTransition from 'components/RouterTransition'
+import 'dayjs/locale/pl'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { trpc } from 'utils/trpc'
@@ -30,8 +35,8 @@ function App({ Component, pageProps }: AppProps) {
 
 	return (
 		<>
+			<HeadTitle />
 			<Head>
-				<title>Librus</title>
 				<meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
 				<link rel="icon" href="/librus.png" />
 			</Head>
@@ -55,13 +60,26 @@ function App({ Component, pageProps }: AppProps) {
 									radius: 'lg',
 								},
 							},
+							Calendar: {
+								defaultProps: {
+									locale: 'pl',
+								},
+							},
 						},
 					}}
 				>
-					<Layout>
-						<RouterTransition />
-						<Component {...pageProps} />
-					</Layout>
+					<NotificationsProvider>
+						<ModalsProvider
+							modals={{
+								'attendances-calendar': AttendancesCalendar,
+							}}
+						>
+							<Layout>
+								<RouterTransition />
+								<Component {...pageProps} />
+							</Layout>
+						</ModalsProvider>
+					</NotificationsProvider>
 				</MantineProvider>
 			</ColorSchemeProvider>
 

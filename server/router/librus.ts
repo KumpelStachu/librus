@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { protectedProcedure, router } from 'server/trpc'
 import { z } from 'zod'
 
@@ -33,7 +34,8 @@ export const librusRouter = router({
 		return ctx.librus.assignmentMarkAsDone(input)
 	}),
 	notices: protectedProcedure.query(async ({ ctx }) => {
-		return ctx.librus.notices()
+		const notices = await ctx.librus.notices()
+		return notices.sort((a, b) => dayjs(b.CreationDate).diff(a.CreationDate))
 	}),
 	notice: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
 		const notice = await ctx.librus.notice(input)
@@ -89,4 +91,32 @@ export const librusRouter = router({
 			}
 		})
 	}),
+	attendances: protectedProcedure
+		.input(z.object({ showPresences: z.boolean().default(false) }).default({}))
+		.query(async ({ ctx, input }) => {
+			const Attendances = await ctx.librus.attendances(input.showPresences)
+			const Types = await ctx.librus.attendanceTypes(Attendances.map(a => a.Type.Id))
+			const Lessons = await ctx.librus.lessons(Attendances.map(a => a.Lesson.Id))
+			const Subjects = await ctx.librus.subjects(Lessons.map(l => l.Subject.Id))
+			const Users = await ctx.librus.users()
+			const Colors = await ctx.librus.colors()
+
+			return Attendances.map(a => {
+				const Type = Types.find(t => t.Id === a.Type.Id)!
+				const Lesson = Lessons.find(l => l.Id === a.Lesson.Id)!
+
+				return {
+					...a,
+					AddedBy: Users.find(u => u.Id === a.AddedBy.Id)!,
+					Lesson: {
+						...Lesson,
+						Teacher: Users.find(u => u.Id === Lesson.Teacher.Id)!,
+						Subject: Subjects.find(s => s.Id === Lesson.Subject.Id)!,
+					},
+					Type: Type.Standard
+						? Type
+						: { ...Type, ColorRGB: Colors.find(c => c.Id === Type.Color.Id)!.RGB },
+				}
+			})
+		}),
 })

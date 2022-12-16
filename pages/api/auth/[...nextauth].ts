@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthOptions, User } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import Librus from 'server/librus'
+import Librus, { refreshToken } from 'server/librus'
 
 export const authOptions: NextAuthOptions = {
 	providers: [
@@ -21,9 +21,8 @@ export const authOptions: NextAuthOptions = {
 				const librus = await Librus(credentials)
 				if (!librus) return null
 
-				const me = await librus.api<'Me', Librus.Me>('/Me')
-				if (!me) return null
-				const { Account } = me.Me
+				const { Account } = await librus.me()
+				if (!Account) return null
 
 				return {
 					id: credentials.username,
@@ -39,21 +38,21 @@ export const authOptions: NextAuthOptions = {
 			return session
 		},
 		async jwt({ token, user }) {
-			// TODO: handle refreshing librus_token
 			if (user) {
 				const { librus_token, ..._user } = user
-				token.librus_token = librus_token
+
+				token.librus_token ??= librus_token
 				token.user = _user as User
+
+				if (
+					token.librus_token.issued_at + token.librus_token.expires_in >=
+					Math.ceil(new Date().getTime() / 1000)
+				)
+					token.librus_token = await refreshToken(token.librus_token)
 			}
+
 			return token
 		},
-	},
-	jwt: {
-		maxAge: 24 * 60 * 60,
-	},
-	session: {
-		strategy: 'jwt',
-		maxAge: 24 * 60 * 60,
 	},
 }
 
